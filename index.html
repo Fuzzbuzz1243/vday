@@ -13,7 +13,7 @@
       height: 100vh;
       overflow: hidden;
     }
-    /* Bush container covering the entire viewport */
+    /* Bush container covering entire viewport */
     #bushContainer {
       position: absolute;
       top: 0;
@@ -22,7 +22,7 @@
       height: 100%;
       z-index: 5;
       pointer-events: none;
-      display: none; /* Only shown on Yay page */
+      display: none; /* Shown only on Yay page */
     }
     /* Main box container (Yay box, etc.) */
     .container {
@@ -201,7 +201,7 @@
       else return "😫";
     }
 
-    // "Yes" on "Are you sure?" page: spawn sad emoji.
+    // "Yes" on "Are you sure?" page: spawn a sad emoji.
     function areYouSureYes() {
       emojiCount++;
       const level = Math.floor((emojiCount - 1) / 2) + 1;
@@ -242,9 +242,8 @@
       animateYayPage();
     }
 
-    // Animate the Yay page: show bush of roses and floating hearts.
+    // Animate the Yay page: show the bush of roses and floating hearts.
     function animateYayPage() {
-      // Show the bush container.
       const bush = document.getElementById("bushContainer");
       bush.style.display = "block";
       animateBush();
@@ -259,7 +258,8 @@
                pos1.y >= pos2.y + size);
     }
 
-    // Animate bush: create rose emojis randomly in the viewport except inside the box.
+    // Animate bush: create rose emojis randomly over the viewport,
+    // but ensure they do not fall inside the Yay box.
     function animateBush() {
       const bushContainer = document.getElementById("bushContainer");
       bushContainer.innerHTML = ""; // Clear previous roses
@@ -269,7 +269,7 @@
       const placedPositions = [];
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
-      // Get the bounding rectangle of the yayPage container (box)
+      // Get the bounding rectangle of the Yay box (forbidden area)
       const forbiddenRect = document.getElementById("yayPage").getBoundingClientRect();
 
       for (let i = 0; i < numRoses; i++) {
@@ -279,31 +279,17 @@
             x: Math.random() * (viewportWidth - roseSize),
             y: Math.random() * (viewportHeight - roseSize)
           };
-          // Check candidate doesn't overlap forbidden area (the box)
-          if (rectsOverlap(candidate, {x: forbiddenRect.left, y: forbiddenRect.top}, roseSize) &&
-              rectsOverlap({x: forbiddenRect.left, y: forbiddenRect.top}, candidate, roseSize)) {
-            // This check isn't sufficient; instead, use a proper check:
-            if (!(candidate.x + roseSize <= forbiddenRect.left ||
-                  candidate.x >= forbiddenRect.right ||
-                  candidate.y + roseSize <= forbiddenRect.top ||
-                  candidate.y >= forbiddenRect.bottom)) {
-              valid = false;
-            } else {
-              valid = true;
-            }
+          // Check that candidate does NOT fall inside the forbidden area.
+          if (
+            candidate.x + roseSize > forbiddenRect.left &&
+            candidate.x < forbiddenRect.right &&
+            candidate.y + roseSize > forbiddenRect.top &&
+            candidate.y < forbiddenRect.bottom
+          ) {
+            valid = false;
           } else {
-            // Alternatively, simply check if candidate overlaps forbidden rectangle.
-            if (!(candidate.x + roseSize <= forbiddenRect.left ||
-                  candidate.x >= forbiddenRect.right ||
-                  candidate.y + roseSize <= forbiddenRect.top ||
-                  candidate.y >= forbiddenRect.bottom)) {
-              valid = false;
-            } else {
-              valid = true;
-            }
-          }
-          // Also ensure candidate doesn't overlap any already placed candidate.
-          if (valid) {
+            valid = true;
+            // Also check candidate doesn't overlap any already placed candidate.
             for (let pos of placedPositions) {
               if (rectsOverlap(candidate, pos, roseSize)) {
                 valid = false;
@@ -323,7 +309,7 @@
         rose.style.left = candidate.x + "px";
         rose.style.top = candidate.y + "px";
         // Random animation delay for natural blooming
-        const delay = Math.random() * 1;
+        const delay = Math.random() * 1; // up to 1s delay
         rose.style.animationDelay = delay + "s";
         bushContainer.appendChild(rose);
       }
